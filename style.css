@@ -107,3 +107,65 @@ footer a {
   text-decoration: none;
   font-weight: bold;
 }
+
+/* Modal */
+.modal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(11, 12, 15, 0.45);
+  padding: 24px;
+  z-index: 1000;
+}
+
+.modal-content {
+  width: 100%;
+  max-width: 520px;
+  background: linear-gradient(180deg, #ffffff, #fbfbff);
+  border-radius: 12px;
+  padding: 20px 22px;
+  box-shadow: 0 24px 60px rgba(11, 12, 15, 0.25);
+  transform: translateY(-8px);
+  transition: transform 220ms ease, opacity 200ms ease;
+}
+
+.modal h2 {
+  margin-bottom: 8px;
+}
+
+.modal .close-btn {
+  position: absolute;
+  top: 18px;
+  right: 20px;
+  border: none;
+  background: transparent;
+  font-size: 20px;
+  cursor: pointer;
+  color: #666;
+}
+
+label { display:block; margin-top:12px; margin-bottom:6px; color:#333; }
+input[type="text"], textarea, select {
+  width:100%;
+  padding:10px 12px;
+  border-radius:8px;
+  border:1px solid #e6e6f0;
+  background: #fff;
+  font-size:14px;
+}
+
+.form-actions { display:flex; gap:8px; margin-top:14px; align-items:center; }
+.form-actions button { padding:10px 14px; border-radius:8px; border:none; cursor:pointer; }
+.btn-primary { background:#7b61ff; color:#fff; font-weight:600 }
+.btn-muted { background:#f1f2fb; color:#333 }
+
+.status { margin-top:10px; font-size:14px; color:#333 }
+.status.success { color: #0b8a55 }
+.status.error { color: #d04444 }
+
+/* small success animation */
+.success-badge {
+  display:inline-flex; align-items:center; gap:8px; padding:8px 10px; border-radius:999px; background:#f0fff6; color:#0b8a55; font-weight:600; margin-left:8px;
+}
