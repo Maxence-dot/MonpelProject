@@ -1,0 +1,7 @@
+/.env
+/config.local.php
+/config.php
+/.env.local
+/.env.*
+/.idea/
+vendor/
