@@ -51,8 +51,9 @@ jobs:
           server-dir: /htdocs/
           # Le répertoire local à téléverser (assurez-vous que c'est le dossier construit si vous avez une étape de build)
           local-dir: ./
-          # Active le logging détaillé pour diagnostiquer pourquoi les fichiers ne sont pas transférés
-          log-level: debug
+          # Niveau de logs valide: minimal, standard, verbose
+          log-level: verbose
+          # Pour tester sans envoyer de fichiers, vous pouvez activer `dry-run: true`
           # Exclure certains fichiers/dossiers (input correct: 'exclude')
           # exclude: |
           #   **/.git*
