@@ -1,5 +1,12 @@
 <?php
 require_once 'connexionAll.php';
+session_start();
+
+// Si l'utilisateur n'est pas connecté
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit;
+}
 ?>
 
 <!DOCTYPE html>
