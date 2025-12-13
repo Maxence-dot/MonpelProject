@@ -25,13 +25,19 @@ foreach ($migrations as $file) {
 
     echo "Applying $name...\n";
     include $file;
-    if (!function_exists('up')) {
+    $base = pathinfo($file, PATHINFO_FILENAME);
+    $candidate = 'up_' . preg_replace('/[^A-Za-z0-9_]/', '_', $base);
+    if (function_exists($candidate)) {
+        $upFn = $candidate;
+    } elseif (function_exists('up')) {
+        $upFn = 'up';
+    } else {
         echo "Migration $name does not expose up(PDO)\n";
         continue;
     }
     try {
         $pdo->beginTransaction();
-        up($pdo);
+        $upFn($pdo);
         $pdo->commit();
         $insert = $pdo->prepare('INSERT INTO migrations (name) VALUES (?)');
         $insert->execute([$name]);

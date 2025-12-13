@@ -1,6 +1,6 @@
 <?php
 // Migration: create game_types and murder_parties (driver-aware)
-function up(PDO $pdo)
+function up_20251213_create_game_types_and_murder_parties(PDO $pdo)
 {
     $driver = $pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
     if ($driver === 'sqlite') {
@@ -57,7 +57,7 @@ SQL
     }
 }
 
-function down(PDO $pdo)
+function down_20251213_create_game_types_and_murder_parties(PDO $pdo)
 {
     $driver = $pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
     if ($driver === 'sqlite') {

@@ -8,4 +8,6 @@ return [
     'DB_NAME' => 'murdermaker',
     'DB_USER' => 'root',
     'DB_PASS' => '',
+    // Token to trigger web migrations runner; set a long random string in your real config.
+    'MIGRATION_TOKEN' => 'changeme_random_token',
 ];

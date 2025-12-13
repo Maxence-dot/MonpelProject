@@ -32,49 +32,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
-<!DOCTYPE html>
-<html lang="fr">
+<?php include __DIR__ . '/views/auth/login_view.php'; ?>
 
-<head>
-    <meta charset="UTF-8">
-    <title>Connexion</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-
-<body>
-
-    <main class="auth-wrapper">
-        <div class="auth-card">
-            <h1>Se connecter</h1>
-            <p class="lead">Accédez à votre espace Murder Party Générative</p>
-
-            <?php if ($error): ?>
-                <div class="msg msg-error"><?= htmlspecialchars($error) ?></div>
-            <?php endif; ?>
-
-            <?php if ($success): ?>
-                <div class="msg msg-success"><?= htmlspecialchars($success) ?></div>
-            <?php endif; ?>
-
-            <form method="POST" novalidate>
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input id="email" type="email" name="email" required value="<?= htmlspecialchars($old['email']) ?>">
-                </div>
-
-                <div class="form-group">
-                    <label for="password">Mot de passe</label>
-                    <input id="password" type="password" name="password" required>
-                </div>
-
-                <div class="form-actions">
-                    <button class="btn btn-primary" type="submit">Se connecter</button>
-                    <a class="small-link" href="register.php">Pas de compte ? Créez-en un</a>
-                </div>
-            </form>
-        </div>
-    </main>
-
-</body>
-
-</html>
