@@ -1,0 +1,55 @@
+# Nom du workflow
+name: 🚀 Déploiement Automatique sur InfinityFree (FTP)
+
+# Événements déclencheurs
+on:
+  push:
+    branches:
+      - main # Le workflow s'exécute à chaque push sur la branche 'main'
+
+# Jobs (tâches) à exécuter
+jobs:
+  deploy:
+    # Exécuter le job sur un runner Ubuntu
+    runs-on: ubuntu-latest
+    
+    # Étapes du job
+    steps:
+      # 1. Checkout du code
+      - name:  checkout
+        uses: actions/checkout@v4
+        with:
+          # Permet de récupérer l'historique complet pour les futures optimisations si nécessaire
+          fetch-depth: 0
+
+      # 2. (Optionnel) Étape de construction
+      # Si votre site est statique (HTML/CSS/JS simples), vous pouvez sauter cette étape.
+      # Si vous utilisez un framework comme React/Vue/Hugo, vous devez construire le site ici.
+      # - name: Build Project (exemple pour un site construit avec Node)
+      #   run: |
+      #     npm install
+      #     npm run build # La commande de construction de votre projet
+
+      # 3. Déploiement FTP (l'étape cruciale)
+      - name: FTP Deploy to InfinityFree
+        # Utilisation de l'action très populaire 'SamKirkland/FTP-Deploy-Action'
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.0
+        with:
+          # Configuration de la connexion : utilisation des secrets GitHub !
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          # Le chemin d'accès au répertoire sur le serveur FTP
+          # Pour InfinityFree, c'est généralement 'htdocs' pour le domaine principal.
+          server-directory: /htdocs/
+          # Le répertoire local à téléverser
+          # Si vous avez une étape de "build", utilisez le dossier de sortie (e.g., 'dist/', 'build/').
+          # Si c'est un site simple, utilisez './' (le répertoire racine du dépôt).
+          local-dir: ./
+          # Option pour supprimer les fichiers sur le serveur qui n'existent plus localement.
+          # À utiliser avec PRUDENCE : assurez-vous que `local-dir` est correct.
+          # delete-excluded: true 
+          # excludes: | # Exclure des fichiers/dossiers si nécessaire
+          #   **/.git*
+          #   **/.github*
+          #   **/node_modules
