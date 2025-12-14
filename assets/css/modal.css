@@ -25,7 +25,7 @@
 
 .modal h2 { margin-bottom: 8px; }
 
-.modal .close-btn {
+.modal .close-btn, .modal .close {
   position: absolute;
   top: 18px;
   right: 20px;
@@ -45,9 +45,21 @@ input[type="text"], textarea, select {
 .form-actions button { padding:10px 14px; border-radius:8px; border:none; cursor:pointer; }
 .btn-primary { background:#7b61ff; color:#fff; font-weight:600 }
 .btn-muted { background:#f1f2fb; color:#333 }
+.btn-submit { background:#4CAF50; color:#fff; font-weight:600; padding:12px 24px; width:100%; margin-top:16px; }
+.btn-submit:hover { background: #45a049; }
 
 .status { margin-top:10px; font-size:14px; color:#333 }
 .status.success { color: #0b8a55 }
+
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; margin-bottom: 0.5rem; font-weight: bold; color: #555; }
+.form-group input, .form-group select, .form-group textarea {
+  width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px;
+  font-size: 1rem; font-family: inherit; transition: border-color 0.3s ease;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+  outline: none; border-color: #4CAF50;
+}
 .status.error { color: #d04444 }
 
 .success-badge { display:inline-flex; align-items:center; gap:8px; padding:8px 10px; border-radius:999px; background:#f0fff6; color:#0b8a55; font-weight:600; margin-left:8px; }

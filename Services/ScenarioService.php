@@ -17,15 +17,19 @@ class ScenarioService
 
     /**
      * Crée une nouvelle partie initiale et retourne son ID
+     * @param int $userId
      * @param int $gameTypeId
      * @param string $theme
      * @param string|null $synopsis
      * @return int
      * @throws Exception
      */
-    public function createInitialParty(int $gameTypeId, string $theme, ?string $synopsis): int
+    public function createInitialParty(int $userId, int $gameTypeId, string $theme, ?string $synopsis): int
     {
         // Validation simple
+        if ($userId <= 0) {
+            throw new InvalidArgumentException('Invalid user id');
+        }
         if ($gameTypeId <= 0) {
             throw new InvalidArgumentException('Invalid game type id');
         }
@@ -40,12 +44,21 @@ class ScenarioService
 
         $this->pdo->beginTransaction();
         try {
-            $id = $this->partyRepo->create($gameTypeId, $theme ?: null, $synopsis ?: null, 'draft');
+            $id = $this->partyRepo->create($userId, $gameTypeId, $theme ?: null, $synopsis ?: null, 'draft');
             $this->pdo->commit();
             return $id;
         } catch (Exception $e) {
             $this->pdo->rollBack();
             throw $e;
         }
+    }
+
+    /**
+     * Retourne l'instance PDO
+     * @return PDO
+     */
+    public function getPdo(): PDO
+    {
+        return $this->pdo;
     }
 }

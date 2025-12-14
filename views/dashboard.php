@@ -1,37 +1,43 @@
-<?php
-require_once __DIR__ . '/../connexionAll.php';
-session_start();
-
-// Si l'utilisateur n'est pas connecté
-if (!isset($_SESSION['user_id'])) {
-    header('Location: login.php');
-    exit;
-}
-?>
-
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Accueil – Créer une partie</title>
+    <title>Accueil – Murder Party Maker</title>
     <?php $basePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/'); ?>
     <link rel="stylesheet" href="<?= $basePath ?>/assets/css/style.css" />
     <link rel="stylesheet" href="<?= $basePath ?>/assets/css/modal.css" />
 </head>
-
 <body>
 
     <header>
-        <h1>Mon jeu</h1>
+        <h1>Murder Party Maker</h1>
         <button class="btn-create" onclick="createGame()">Créer une partie</button>
     </header>
 
     <main>
         <div class="carousel-container">
             <h2>Vos parties récentes</h2>
-            <div class="carousel" id="carousel"></div>
+            <!-- Debug: <?= isset($parties) ? 'parties défini, count: ' . count($parties) : 'parties NON défini' ?> -->
+            <?php if (empty($parties)): ?>
+                <div class="carousel">
+                    <p style="text-align: center; padding: 3rem; color: #999; width: 100%;">
+                        Aucune partie en cours<br>
+                        <span style="font-size: 14px;">Commencez par créer votre première Murder Party !</span>
+                    </p>
+                </div>
+            <?php else: ?>
+                <div class="carousel">
+                    <?php foreach (array_slice($parties, 0, 3) as $party): ?>
+                        <div class="card" onclick="location.href='<?= $basePath ?>/party/step2?id=<?= htmlspecialchars($party['id']) ?>'">
+                            <div class="card-title"><?= htmlspecialchars($party['theme'] ?: 'Sans titre') ?></div>
+                            <div class="card-subtitle">
+                                <?= (int)$party['character_count'] ?> joueur<?= $party['character_count'] > 1 ? 's' : '' ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
         </div>
     </main>
 
@@ -73,30 +79,13 @@ if (!isset($_SESSION['user_id'])) {
 
     <script src="<?= $basePath ?>/assets/js/modal.js" defer></script>
     <script>
-        const games = [];
         let currentPartyId = null;
         const basePath = '<?= $basePath ?>';
-
-        function renderCarousel() {
-            const carousel = document.getElementById('carousel');
-            carousel.innerHTML = '';
-
-            games.slice(0, 3).forEach(game => {
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.innerHTML = `
-          <div class="card-title">${game.name}</div>
-          <div class="card-subtitle">${game.date}</div>
-        `;
-                carousel.appendChild(card);
-            });
-        }
 
         async function createGame() {
             Modal.open('step1Modal');
             try {
                 await Modal.fetchGameTypes('#gameTypeSelect', basePath + '/api/game_types.php');
-                // focus the select after it is populated
                 setTimeout(() => {
                     const sel = document.getElementById('gameTypeSelect');
                     if (sel) sel.focus();
@@ -134,8 +123,11 @@ if (!isset($_SESSION['user_id'])) {
                 const data = await res.json();
                 if (data.success) {
                     currentPartyId = data.id;
-                    Modal.setStatus('step1Modal', `Partie initialisée (ID: ${data.id})`, 'success');
-                    setTimeout(() => Modal.close('step1Modal'), 1200);
+                    Modal.setStatus('step1Modal', `Partie créée avec succès !`, 'success');
+                    setTimeout(() => {
+                        Modal.close('step1Modal');
+                        location.reload(); // Recharger pour afficher la nouvelle partie
+                    }, 1200);
                 } else {
                     Modal.setStatus('step1Modal', 'Erreur: ' + (data.error || 'inconnue'), 'error');
                     Modal.setBusy('step1Modal', false, { readyText: 'Créer la partie' });
@@ -145,11 +137,7 @@ if (!isset($_SESSION['user_id'])) {
                 Modal.setBusy('step1Modal', false, { readyText: 'Créer la partie' });
             }
         }
-
-        renderCarousel();
     </script>
 
-
 </body>
-
 </html>

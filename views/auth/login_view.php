@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Connexion</title>
-    <link rel="stylesheet" href="style.css">
+    <?php $basePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/'); ?>
+    <link rel="stylesheet" href="<?= $basePath ?>/assets/css/style.css">
 </head>
 
 <body>

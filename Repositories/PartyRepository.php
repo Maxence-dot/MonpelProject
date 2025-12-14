@@ -15,6 +15,7 @@ class PartyRepository
 
     /**
      * Crée une nouvelle partie
+     * @param int $userId
      * @param int $gameTypeId
      * @param string|null $theme
      * @param string|null $synopsis
@@ -22,35 +23,37 @@ class PartyRepository
      * @return int L'ID de la nouvelle partie
      * @throws Exception
      */
-    public function create(int $gameTypeId, ?string $theme = null, ?string $synopsis = null, string $status = 'draft'): int
+    public function create(int $userId, int $gameTypeId, ?string $theme = null, ?string $synopsis = null, string $status = 'draft'): int
     {
         $statement = $this->pdo->prepare(
-            'INSERT INTO murder_parties (game_type_id, theme, synopsis, status) VALUES (?, ?, ?, ?)'
+            'INSERT INTO murder_parties (user_id, game_type_id, theme, synopsis, status) VALUES (?, ?, ?, ?, ?)'
         );
-        $statement->execute([$gameTypeId, $theme, $synopsis, $status]);
+        $statement->execute([$userId, $gameTypeId, $theme, $synopsis, $status]);
         return (int) $this->pdo->lastInsertId();
     }
 
     /**
-     * Trouve une partie par ID
+     * Trouve une partie par ID pour un utilisateur spécifique (sécurisé)
      * @param int $partyId
+     * @param int $userId
      * @return array|null
      */
-    public function findById(int $partyId): ?array
+    public function findById(int $partyId, int $userId): ?array
     {
-        $statement = $this->pdo->prepare('SELECT * FROM murder_parties WHERE id = ?');
-        $statement->execute([$partyId]);
+        $statement = $this->pdo->prepare('SELECT * FROM murder_parties WHERE id = ? AND user_id = ?');
+        $statement->execute([$partyId, $userId]);
         $party = $statement->fetch();
         return $party ?: null;
     }
 
     /**
-     * Met à jour une partie
+     * Met à jour une partie (sécurisé)
      * @param int $partyId
+     * @param int $userId
      * @param array $data Tableau associatif des champs à mettre à jour
      * @return bool
      */
-    public function update(int $partyId, array $data): bool
+    public function update(int $partyId, int $userId, array $data): bool
     {
         $allowedFields = ['game_type_id', 'theme', 'synopsis', 'status'];
         $fields = [];
@@ -68,7 +71,8 @@ class PartyRepository
         }
         
         $values[] = $partyId;
-        $sql = 'UPDATE murder_parties SET ' . implode(', ', $fields) . ' WHERE id = ?';
+        $values[] = $userId;
+        $sql = 'UPDATE murder_parties SET ' . implode(', ', $fields) . ' WHERE id = ? AND user_id = ?';
         $statement = $this->pdo->prepare($sql);
         return $statement->execute($values);
     }
@@ -86,21 +90,57 @@ class PartyRepository
     }
 
     /**
-     * Liste toutes les parties (avec pagination optionnelle)
+     * Liste toutes les parties d'un utilisateur (avec pagination optionnelle)
+     * @param int $userId
      * @param int|null $limit
      * @param int $offset
      * @return array
      */
-    public function findAll(?int $limit = null, int $offset = 0): array
+    public function findAll(int $userId, ?int $limit = null, int $offset = 0): array
     {
-        $sql = 'SELECT * FROM murder_parties ORDER BY created_at DESC';
+        $sql = 'SELECT * FROM murder_parties WHERE user_id = ? ORDER BY created_at DESC';
         if ($limit !== null) {
             $sql .= ' LIMIT ? OFFSET ?';
             $statement = $this->pdo->prepare($sql);
-            $statement->execute([$limit, $offset]);
+            $statement->execute([$userId, $limit, $offset]);
         } else {
-            $statement = $this->pdo->query($sql);
+            $statement = $this->pdo->prepare($sql);
+            $statement->execute([$userId]);
         }
         return $statement->fetchAll();
+    }
+
+    /**
+     * Liste les parties en brouillon (draft) avec le nombre de personnages
+     * @param int $userId
+     * @return array
+     */
+    public function findDraftsWithCharacterCount(int $userId): array
+    {
+        $sql = <<<'SQL'
+SELECT 
+    mp.*,
+    COUNT(c.id) as character_count
+FROM murder_parties mp
+LEFT JOIN characters c ON mp.id = c.party_id
+WHERE mp.user_id = ?
+GROUP BY mp.id
+ORDER BY mp.updated_at DESC
+SQL;
+        $statement = $this->pdo->prepare($sql);
+        $statement->execute([$userId]);
+        return $statement->fetchAll();
+    }
+
+    /**
+     * Supprime une partie (sécurisé)
+     * @param int $partyId
+     * @param int $userId
+     * @return bool
+     */
+    public function delete(int $partyId, int $userId): bool
+    {
+        $statement = $this->pdo->prepare('DELETE FROM murder_parties WHERE id = ? AND user_id = ?');
+        return $statement->execute([$partyId, $userId]);
     }
 }

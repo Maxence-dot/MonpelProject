@@ -7,6 +7,7 @@
     const el = document.getElementById(id);
     if (!el) return;
     el.classList.add('open');
+    el.style.display = 'block';
     el.setAttribute('aria-hidden', 'false');
     // manage focus
     const first = el.querySelector(focusableSelector);
@@ -18,8 +19,18 @@
     const el = document.getElementById(id);
     if (!el) return;
     el.classList.remove('open');
+    el.style.display = 'none';
     el.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
+  };
+
+  // Fonctions génériques pour la gestion des modales
+  global.openModal = function(modalId) {
+    Modal.open(modalId);
+  };
+
+  global.closeModal = function(modalId) {
+    Modal.close(modalId);
   };
 
   Modal.setStatus = function (id, text, type) {

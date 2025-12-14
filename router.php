@@ -2,6 +2,9 @@
 // Simple router: map public paths to implementation files under views/ or root handlers
 // Keeps a safe allowlist of routes to avoid arbitrary file includes.
 
+// Load database connection
+require_once __DIR__ . '/connexionAll.php';
+
 $basePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
 $req = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $path = trim(preg_replace('#^' . preg_quote($basePath, '#') . '#', '', $req), '/');
@@ -41,10 +44,52 @@ if (is_dir($viewsDir)) {
 $routes['migrate.php'] = 'admin/migrate.php';
 $routes['admin/migrate.php'] = 'admin/migrate.php';
 
+// Serve static files from assets/ folder (CSS, JS, images, etc.)
+if (preg_match('#^assets/(.+)$#', $path, $m)) {
+    $assetFile = __DIR__ . '/assets/' . $m[1];
+    if (file_exists($assetFile)) {
+        // Set appropriate content type based on file extension
+        $ext = strtolower(pathinfo($assetFile, PATHINFO_EXTENSION));
+        $contentTypes = [
+            'css' => 'text/css',
+            'js' => 'application/javascript',
+            'json' => 'application/json',
+            'png' => 'image/png',
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'gif' => 'image/gif',
+            'svg' => 'image/svg+xml',
+            'ico' => 'image/x-icon',
+            'woff' => 'font/woff',
+            'woff2' => 'font/woff2',
+            'ttf' => 'font/ttf',
+        ];
+        if (isset($contentTypes[$ext])) {
+            header('Content-Type: ' . $contentTypes[$ext]);
+        }
+        readfile($assetFile);
+        exit;
+    }
+}
+
+// API routes - map api/* to api/ folder
+if (preg_match('#^api/([^/]+)$#', $path, $m)) {
+    $apiFile = __DIR__ . '/api/' . $m[1];
+    if (file_exists($apiFile)) {
+        require $apiFile;
+        exit;
+    }
+}
+
 $pathKey = $path === '' ? '' : $path;
 
 // Controller mappings (prefer controllers over raw views when present)
 $controllerMap = [
+    '' => ['file' => 'Controllers/DashboardController.php', 'method' => 'index'],
+    'dashboard' => ['file' => 'Controllers/DashboardController.php', 'method' => 'index'],
+    'dashboard.php' => ['file' => 'Controllers/DashboardController.php', 'method' => 'index'],
+    'party/step2' => ['file' => 'Controllers/CharacterController.php', 'method' => 'addPlayers'],
+    'party/step3' => ['file' => 'Controllers/CharacterController.php', 'method' => 'manageRelations'],
     'login' => ['file' => 'Controllers/AuthController.php', 'method' => 'login'],
     'login.php' => ['file' => 'Controllers/AuthController.php', 'method' => 'login'],
     'register' => ['file' => 'Controllers/AuthController.php', 'method' => 'register'],
@@ -60,10 +105,31 @@ if (isset($controllerMap[$pathKey])) {
     if (file_exists($controllerFile)) {
         require_once $controllerFile;
         $method = $c['method'];
-        $class = '\\AuthController';
-        if (is_callable([$class, $method])) {
-            $class::$method();
+        
+        // Extract class name from file path
+        $className = basename($c['file'], '.php');
+        
+        // Special handling based on controller type
+        if ($className === 'DashboardController') {
+            require_once __DIR__ . '/Repositories/PartyRepository.php';
+            $partyRepo = new PartyRepository($pdo);
+            $controller = new DashboardController($partyRepo);
+            $controller->$method();
             exit;
+        } elseif ($className === 'CharacterController') {
+            require_once __DIR__ . '/Repositories/PartyRepository.php';
+            require_once __DIR__ . '/Repositories/CharacterRepository.php';
+            $partyRepo = new PartyRepository($pdo);
+            $characterRepo = new CharacterRepository($pdo);
+            $controller = new CharacterController($characterRepo, $partyRepo);
+            $controller->$method();
+            exit;
+        } elseif ($className === 'AuthController') {
+            // AuthController uses static methods
+            if (is_callable(['\\' . $className, $method])) {
+                ('\\' . $className)::$method();
+                exit;
+            }
         }
     }
 }
