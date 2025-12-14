@@ -14,14 +14,28 @@ CREATE INDEX idx_murder_parties_user_id ON murder_parties(user_id);
 SQL
         );
     } else {
-        // MySQL
-        $pdo->exec(<<<'SQL'
+        // MySQL - D'abord vérifier si la table users existe
+        $stmt = $pdo->query("SHOW TABLES LIKE 'users'");
+        $usersExists = $stmt->rowCount() > 0;
+        
+        if ($usersExists) {
+            // Si users existe, ajouter avec contrainte
+            $pdo->exec(<<<'SQL'
 ALTER TABLE murder_parties 
 ADD COLUMN user_id INT UNSIGNED NOT NULL,
 ADD INDEX idx_user_id (user_id),
 ADD CONSTRAINT fk_murder_parties_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
 SQL
-        );
+            );
+        } else {
+            // Sinon, ajouter sans contrainte (sera ajoutée plus tard)
+            $pdo->exec(<<<'SQL'
+ALTER TABLE murder_parties 
+ADD COLUMN user_id INT UNSIGNED NOT NULL DEFAULT 1,
+ADD INDEX idx_user_id (user_id);
+SQL
+            );
+        }
     }
 }
 
