@@ -43,6 +43,11 @@ if (is_dir($viewsDir)) {
 // Add explicit non-view routes
 $routes['migrate.php'] = 'admin/migrate.php';
 $routes['admin/migrate.php'] = 'admin/migrate.php';
+$routes['admin'] = 'admin/index.php';
+$routes['admin/'] = 'admin/index.php';
+$routes['admin/index.php'] = 'admin/index.php';
+$routes['admin/list_migrations.php'] = 'admin/list_migrations.php';
+$routes['admin/db_status.php'] = 'admin/db_status.php';
 
 // Serve static files from assets/ folder (CSS, JS, images, etc.)
 if (preg_match('#^assets/(.+)$#', $path, $m)) {
