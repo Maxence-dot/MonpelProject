@@ -25,7 +25,10 @@ if (!isset($_SESSION['user_id'])) {
 
     <header>
         <h1>Mon jeu</h1>
-        <button class="btn-create" onclick="createGame()">Créer une partie</button>
+        <div style="display:flex;gap:12px;align-items:center;">
+            <button class="btn-create" onclick="createGame()">Créer une partie</button>
+            <a href="<?= $basePath ?>/logout.php" class="btn-logout">Déconnexion</a>
+        </div>
     </header>
 
     <main>
@@ -123,12 +126,16 @@ if (!isset($_SESSION['user_id'])) {
             }
 
             Modal.setStatus('step1Modal', '');
-            Modal.setBusy('step1Modal', true, { busyText: 'Création en cours…' });
+            Modal.setBusy('step1Modal', true, {
+                busyText: 'Création en cours…'
+            });
 
             try {
                 const res = await fetch(basePath + '/api/party.php?action=create', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify(payload)
                 });
                 const data = await res.json();
@@ -138,11 +145,15 @@ if (!isset($_SESSION['user_id'])) {
                     setTimeout(() => Modal.close('step1Modal'), 1200);
                 } else {
                     Modal.setStatus('step1Modal', 'Erreur: ' + (data.error || 'inconnue'), 'error');
-                    Modal.setBusy('step1Modal', false, { readyText: 'Créer la partie' });
+                    Modal.setBusy('step1Modal', false, {
+                        readyText: 'Créer la partie'
+                    });
                 }
             } catch (e) {
                 Modal.setStatus('step1Modal', 'Erreur réseau', 'error');
-                Modal.setBusy('step1Modal', false, { readyText: 'Créer la partie' });
+                Modal.setBusy('step1Modal', false, {
+                    readyText: 'Créer la partie'
+                });
             }
         }
 

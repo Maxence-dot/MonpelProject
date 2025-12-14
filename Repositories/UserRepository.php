@@ -47,13 +47,14 @@ class UserRepository
      * @return int L'ID du nouvel utilisateur
      * @throws Exception
      */
-    public function create(string $email, string $hashedPassword, ?string $firstname = null, ?string $lastname = null): int
+    public function create(string $email, string $hashedPassword, ?string $firstname = null, ?string $lastname = null, ?string $emailToken = null, ?string $tokenCreatedAt = null): int
     {
         $now = date('Y-m-d H:i:s');
+        // Insert with optional token fields. The table may or may not have the token columns; if it does not, caller should run migrations.
         $statement = $this->pdo->prepare(
-            "INSERT INTO users (email, password, firstname, lastname, created_at) VALUES (?,?,?,?,?)"
+            "INSERT INTO users (email, password, firstname, lastname, email_token, token_created_at, created_at) VALUES (?,?,?,?,?,?,?)"
         );
-        $statement->execute([$email, $hashedPassword, $firstname, $lastname, $now]);
+        $statement->execute([$email, $hashedPassword, $firstname, $lastname, $emailToken, $tokenCreatedAt ?? $now, $now]);
         return (int) $this->pdo->lastInsertId();
     }
 
