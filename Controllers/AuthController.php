@@ -1,8 +1,14 @@
 <?php
 require_once __DIR__ . '/../connexionAll.php';
+require_once __DIR__ . '/../Repositories/UserRepository.php';
 
 class AuthController
 {
+    private static function getUserRepository(): UserRepository
+    {
+        return new UserRepository($GLOBALS['pdo']);
+    }
+
     public static function login()
     {
         session_start();
@@ -15,16 +21,16 @@ class AuthController
             $password = $_POST['password'] ?? '';
             $old['email'] = $email;
             if ($email && $password) {
-                $stmt = $GLOBALS['pdo']->prepare("SELECT * FROM session WHERE email = ?");
-                $stmt->execute([$email]);
-                $user = $stmt->fetch();
+                $userRepo = self::getUserRepository();
+                $user = $userRepo->findByEmail($email);
 
                 if ($user && password_verify($password, $user['password'])) {
                     session_regenerate_id(true);
                     $_SESSION['user_id'] = $user['id'];
                     $_SESSION['user_email'] = $user['email'];
 
-                    header('Location: /MonpelProject/index.php');
+                    $basePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
+                    header('Location: ' . $basePath . '/index.php');
                     exit;
                 } else {
                     $error = 'Email ou mot de passe incorrect';
@@ -64,17 +70,15 @@ class AuthController
             }
 
             if (empty($errors)) {
-                $stmt = $GLOBALS['pdo']->prepare("SELECT id FROM session WHERE email = ?");
-                $stmt->execute([$email]);
-                if ($stmt->fetch()) {
+                $userRepo = self::getUserRepository();
+                if ($userRepo->emailExists($email)) {
                     $errors[] = 'Un compte avec cet email existe déjà';
                 } else {
                     $hash = password_hash($password, PASSWORD_DEFAULT);
-                    $now = date('Y-m-d H:i:s');
-                    $insert = $GLOBALS['pdo']->prepare("INSERT INTO session (email, password, firstname, lastname, created_at) VALUES (?,?,?,?,?)");
                     try {
-                        $insert->execute([$email, $hash, $firstname, $lastname, $now]);
-                        header('Location: /MonpelProject/login.php?registered=1');
+                        $userRepo->create($email, $hash, $firstname, $lastname);
+                        $basePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
+                        header('Location: ' . $basePath . '/login.php?registered=1');
                         exit;
                     } catch (Exception $e) {
                         $errors[] = 'Erreur enregistrement: ' . $e->getMessage();
@@ -90,7 +94,8 @@ class AuthController
     {
         session_start();
         session_destroy();
-        header('Location: /MonpelProject/login.php');
+        $basePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
+        header('Location: ' . $basePath . '/login.php');
         exit;
     }
 }

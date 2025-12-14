@@ -9,6 +9,7 @@ if (!file_exists(__DIR__ . '/admin/migrate.php')) {
 }
 
 $token = isset($_GET['token']) ? urlencode($_GET['token']) : '';
-$location = '/MonpelProject/admin/migrate.php' . ($token !== '' ? '?token=' . $token : '');
+$basePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
+$location = $basePath . '/admin/migrate.php' . ($token !== '' ? '?token=' . $token : '');
 header('Location: ' . $location);
 exit;

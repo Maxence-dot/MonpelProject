@@ -16,8 +16,9 @@ if (!isset($_SESSION['user_id'])) {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Accueil – Créer une partie</title>
-    <link rel="stylesheet" href="/MonpelProject/style.css" />
-    <link rel="stylesheet" href="/MonpelProject/assets/css/modal.css" />
+    <?php $basePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/'); ?>
+    <link rel="stylesheet" href="<?= $basePath ?>/style.css" />
+    <link rel="stylesheet" href="<?= $basePath ?>/assets/css/modal.css" />
 </head>
 
 <body>
@@ -39,7 +40,7 @@ if (!isset($_SESSION['user_id'])) {
         <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="step1Title">
             <button class="close-btn" onclick="Modal.close('step1Modal')" aria-label="Fermer">✕</button>
             <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">
-                <img src="/MonpelProject/assets/icons/knife.svg" alt="knife" width="46" height="46" style="border-radius:10px;background:linear-gradient(180deg,#ede8ff,#efeaff);padding:8px;" />
+                <img src="<?= $basePath ?>/assets/icons/knife.svg" alt="knife" width="46" height="46" style="border-radius:10px;background:linear-gradient(180deg,#ede8ff,#efeaff);padding:8px;" />
                 <div>
                     <h2 id="step1Title">Créer une partie</h2>
                     <div style="color:#666;font-size:13px">Choisissez le type de jeu, un thème et un bref synopsis</div>
@@ -67,10 +68,10 @@ if (!isset($_SESSION['user_id'])) {
     </div>
 
     <footer>
-        <a href="/MonpelProject/contact.html">Contact</a>
+        <a href="<?= $basePath ?>/contact.html">Contact</a>
     </footer>
 
-    <script src="/MonpelProject/assets/js/modal.js" defer></script>
+    <script src="<?= $basePath ?>/assets/js/modal.js" defer></script>
     <script>
         const games = [];
         let currentPartyId = null;

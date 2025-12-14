@@ -1,15 +1,18 @@
 <?php
 require_once __DIR__ . '/../Database/DatabaseService.php';
+require_once __DIR__ . '/../Repositories/PartyRepository.php';
 
 class ScenarioService
 {
     private PDO $pdo;
     private DatabaseService $db;
+    private PartyRepository $partyRepo;
 
     public function __construct(PDO $pdo)
     {
         $this->pdo = $pdo;
         $this->db = new DatabaseService($pdo);
+        $this->partyRepo = new PartyRepository($pdo);
     }
 
     /**
@@ -31,17 +34,13 @@ class ScenarioService
         }
 
         // Ensure game type exists
-        $stmt = $this->pdo->prepare('SELECT id FROM game_types WHERE id = ?');
-        $stmt->execute([$gameTypeId]);
-        if (!$stmt->fetch()) {
+        if (!$this->partyRepo->gameTypeExists($gameTypeId)) {
             throw new InvalidArgumentException('Game type not found');
         }
 
         $this->pdo->beginTransaction();
         try {
-            $insert = $this->pdo->prepare('INSERT INTO murder_parties (game_type_id, theme, synopsis, status) VALUES (?, ?, ?, ?)');
-            $insert->execute([$gameTypeId, $theme ?: null, $synopsis ?: null, 'draft']);
-            $id = (int)$this->pdo->lastInsertId();
+            $id = $this->partyRepo->create($gameTypeId, $theme ?: null, $synopsis ?: null, 'draft');
             $this->pdo->commit();
             return $id;
         } catch (Exception $e) {
