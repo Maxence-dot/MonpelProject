@@ -103,8 +103,3 @@ Voici ce que contient chaque répertoire et comment il fonctionne aujourd'hui :
 - Ajouter un GUIDELINES/CONTRIBUTING simple pour les nouveaux contributeurs
 
 ---
-Si vous voulez, je peux :
-- créer un `CONTRIBUTING.md` basé sur ce document, ou
-- commencer par ajouter Composer + PSR‑4 et renommer quelques classes pour namespaces.
-
-Dites-moi quelle option vous préférez et je m'en occupe.
