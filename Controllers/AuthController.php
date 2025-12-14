@@ -25,13 +25,18 @@ class AuthController
                 $user = $userRepo->findByEmail($email);
 
                 if ($user && password_verify($password, $user['password'])) {
-                    session_regenerate_id(true);
-                    $_SESSION['user_id'] = $user['id'];
-                    $_SESSION['user_email'] = $user['email'];
+                    // Check if email is validated
+                    if (empty($user['email_valid']) || $user['email_valid'] == 0) {
+                        $error = 'Veuillez valider votre adresse email. Vérifiez votre boîte de réception.';
+                    } else {
+                        session_regenerate_id(true);
+                        $_SESSION['user_id'] = $user['id'];
+                        $_SESSION['user_email'] = $user['email'];
 
-                    $basePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
-                    header('Location: ' . $basePath . '/index.php');
-                    exit;
+                        $basePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
+                        header('Location: ' . $basePath . '/index.php');
+                        exit;
+                    }
                 } else {
                     $error = 'Email ou mot de passe incorrect';
                 }
@@ -75,10 +80,20 @@ class AuthController
                     $errors[] = 'Un compte avec cet email existe déjà';
                 } else {
                     $hash = password_hash($password, PASSWORD_DEFAULT);
+                    // generate token for email validation
+                    $token = bin2hex(random_bytes(16));
+                    $now = date('Y-m-d H:i:s');
                     try {
-                        $userRepo->create($email, $hash, $firstname, $lastname);
+                        $userId = $userRepo->create($email, $hash, $firstname, $lastname, $token, $now);
+
+                        // send validation email
+                        require_once __DIR__ . '/../src/MailService.php';
+                        $mail = new \MailService();
+                        $sent = $mail->sendValidationEmail($email, $token);
+                        error_log('[EMAIL_DEBUG] send to: ' . $email . ' result: ' . ($sent ? 'OK' : 'FAILED'));
+
                         $basePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
-                        header('Location: ' . $basePath . '/login.php?registered=1');
+                        header('Location: ' . $basePath . '/auth/check_email.php');
                         exit;
                     } catch (Exception $e) {
                         $errors[] = 'Erreur enregistrement: ' . $e->getMessage();
