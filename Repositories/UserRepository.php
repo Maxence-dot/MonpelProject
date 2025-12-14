@@ -2,7 +2,7 @@
 
 /**
  * UserRepository
- * Gère l'accès aux données de la table session/users
+ * Gère l'accès aux données de la table users
  */
 class UserRepository
 {
@@ -20,7 +20,7 @@ class UserRepository
      */
     public function findByEmail(string $email): ?array
     {
-        $statement = $this->pdo->prepare("SELECT * FROM session WHERE email = ?");
+        $statement = $this->pdo->prepare("SELECT * FROM users WHERE email = ?");
         $statement->execute([$email]);
         $user = $statement->fetch();
         return $user ?: null;
@@ -33,7 +33,7 @@ class UserRepository
      */
     public function emailExists(string $email): bool
     {
-        $statement = $this->pdo->prepare("SELECT id FROM session WHERE email = ?");
+        $statement = $this->pdo->prepare("SELECT id FROM users WHERE email = ?");
         $statement->execute([$email]);
         return (bool) $statement->fetch();
     }
@@ -51,7 +51,7 @@ class UserRepository
     {
         $now = date('Y-m-d H:i:s');
         $statement = $this->pdo->prepare(
-            "INSERT INTO session (email, password, firstname, lastname, created_at) VALUES (?,?,?,?,?)"
+            "INSERT INTO users (email, password, firstname, lastname, created_at) VALUES (?,?,?,?,?)"
         );
         $statement->execute([$email, $hashedPassword, $firstname, $lastname, $now]);
         return (int) $this->pdo->lastInsertId();
@@ -64,7 +64,7 @@ class UserRepository
      */
     public function findById(int $userId): ?array
     {
-        $statement = $this->pdo->prepare("SELECT * FROM session WHERE id = ?");
+        $statement = $this->pdo->prepare("SELECT * FROM users WHERE id = ?");
         $statement->execute([$userId]);
         $user = $statement->fetch();
         return $user ?: null;
