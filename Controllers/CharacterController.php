@@ -23,9 +23,10 @@ class CharacterController
     public function addPlayers()
     {
         session_start();
-        
+
         if (!isset($_SESSION['user_id'])) {
-            header('Location: /login');
+            $basePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
+            header('Location: ' . $basePath . '/login');
             exit;
         }
 
@@ -52,7 +53,7 @@ class CharacterController
     public function savePlayers()
     {
         header('Content-Type: application/json; charset=utf-8');
-        
+
         if (!isset($_SESSION['user_id'])) {
             http_response_code(401);
             echo json_encode(['success' => false, 'error' => 'Non authentifié']);
@@ -98,9 +99,10 @@ class CharacterController
     public function manageRelations()
     {
         session_start();
-        
+
         if (!isset($_SESSION['user_id'])) {
-            header('Location: /login');
+            $basePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
+            header('Location: ' . $basePath . '/login');
             exit;
         }
 
@@ -127,7 +129,7 @@ class CharacterController
     public function addCharacter()
     {
         header('Content-Type: application/json; charset=utf-8');
-        
+
         if (!isset($_SESSION['user_id'])) {
             http_response_code(401);
             echo json_encode(['success' => false, 'error' => 'Non authentifié']);
@@ -166,7 +168,7 @@ class CharacterController
     public function updateCharacter()
     {
         header('Content-Type: application/json; charset=utf-8');
-        
+
         if (!isset($_SESSION['user_id'])) {
             http_response_code(401);
             echo json_encode(['success' => false, 'error' => 'Non authentifié']);
@@ -212,7 +214,7 @@ class CharacterController
     public function deleteCharacter()
     {
         header('Content-Type: application/json; charset=utf-8');
-        
+
         if (!isset($_SESSION['user_id'])) {
             http_response_code(401);
             echo json_encode(['success' => false, 'error' => 'Non authentifié']);

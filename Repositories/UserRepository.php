@@ -70,4 +70,26 @@ class UserRepository
         $user = $statement->fetch();
         return $user ?: null;
     }
+
+    /**
+     * Met à jour le token de validation pour un email donné
+     * @param string $email
+     * @param string $token
+     * @param string $tokenCreatedAt
+     * @return bool
+     */
+    public function setValidationTokenByEmail(string $email, string $token, string $tokenCreatedAt): bool
+    {
+        $statement = $this->pdo->prepare('UPDATE users SET email_token = ?, token_created_at = ? WHERE email = ?');
+        return (bool) $statement->execute([$token, $tokenCreatedAt, $email]);
+    }
+
+    /**
+     * Met à jour le token de validation par ID
+     */
+    public function setValidationTokenById(int $id, string $token, string $tokenCreatedAt): bool
+    {
+        $statement = $this->pdo->prepare('UPDATE users SET email_token = ?, token_created_at = ? WHERE id = ?');
+        return (bool) $statement->execute([$token, $tokenCreatedAt, $id]);
+    }
 }

@@ -99,6 +99,8 @@ $controllerMap = [
     'login.php' => ['file' => 'Controllers/AuthController.php', 'method' => 'login'],
     'register' => ['file' => 'Controllers/AuthController.php', 'method' => 'register'],
     'register.php' => ['file' => 'Controllers/AuthController.php', 'method' => 'register'],
+    'resend-validation' => ['file' => 'Controllers/AuthController.php', 'method' => 'resendValidation'],
+    'resend-validation.php' => ['file' => 'Controllers/AuthController.php', 'method' => 'resendValidation'],
     'logout' => ['file' => 'Controllers/AuthController.php', 'method' => 'logout'],
     'logout.php' => ['file' => 'Controllers/AuthController.php', 'method' => 'logout'],
 ];
@@ -110,10 +112,10 @@ if (isset($controllerMap[$pathKey])) {
     if (file_exists($controllerFile)) {
         require_once $controllerFile;
         $method = $c['method'];
-        
+
         // Extract class name from file path
         $className = basename($c['file'], '.php');
-        
+
         // Special handling based on controller type
         if ($className === 'DashboardController') {
             require_once __DIR__ . '/Repositories/PartyRepository.php';

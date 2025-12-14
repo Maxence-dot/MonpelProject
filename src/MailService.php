@@ -1,5 +1,10 @@
 <?php
 
+// If Composer autoload exists, load it so PHPMailer (and other libs) are available
+if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
+    require_once __DIR__ . '/../vendor/autoload.php';
+}
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
@@ -13,6 +18,40 @@ class MailService
     public function __construct()
     {
         // no-op
+    }
+
+    /**
+     * Construit le lien de validation en tenant compte de APP_URL et du chemin de base
+     */
+    private function buildValidationLink(string $token): string
+    {
+        $appUrl = getenv('APP_URL') ?: null;
+
+        // If APP_URL provided, use it; but if it has no path component and we can infer a base path, append it
+        if ($appUrl) {
+            $parts = parse_url($appUrl);
+            $hasPath = isset($parts['path']) && rtrim($parts['path'], '/') !== '';
+            if (!$hasPath && php_sapi_name() !== 'cli' && isset($_SERVER['SCRIPT_NAME'])) {
+                $basePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
+                if ($basePath && $basePath !== '.') {
+                    $appUrl = rtrim($appUrl, '/') . $basePath;
+                }
+            }
+        } else {
+            // infer from current request when possible
+            if (php_sapi_name() !== 'cli' && isset($_SERVER['HTTP_HOST'])) {
+                $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+                $appUrl = $scheme . '://' . $_SERVER['HTTP_HOST'];
+                $basePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
+                if ($basePath && $basePath !== '.') {
+                    $appUrl = rtrim($appUrl, '/') . $basePath;
+                }
+            } else {
+                $appUrl = 'http://localhost';
+            }
+        }
+
+        return rtrim($appUrl, '/') . '/validate.php?token=' . urlencode($token);
     }
 
     /**
@@ -34,8 +73,7 @@ class MailService
      */
     private function sendViaSMTP(string $to, string $token): bool
     {
-        $appUrl = getenv('APP_URL') ?: 'http://localhost';
-        $link   = rtrim($appUrl, '/') . '/validate.php?token=' . urlencode($token);
+        $link = $this->buildValidationLink($token);
 
         $mail = new PHPMailer(true);
 
@@ -80,8 +118,7 @@ class MailService
      */
     private function sendViaMailFunction(string $to, string $token): bool
     {
-        $appUrl = getenv('APP_URL') ?: 'http://localhost';
-        $link   = rtrim($appUrl, '/') . '/validate.php?token=' . urlencode($token);
+        $link = $this->buildValidationLink($token);
 
         $subject = 'Validez votre adresse email - Murder Party Générative';
         $htmlBody = $this->getValidationEmailHtml($link);

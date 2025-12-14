@@ -19,6 +19,16 @@
                 <div class="msg msg-error"><?= htmlspecialchars($error) ?></div>
             <?php endif; ?>
 
+            <?php if (!empty($showResend)): ?>
+                <div class="resend">
+                    <p>Si vous n'avez pas reçu l'email, vous pouvez le renvoyer :</p>
+                    <form method="POST" action="<?= $basePath ?>/resend-validation">
+                        <input type="hidden" name="email" value="<?= htmlspecialchars($old['email'] ?? '') ?>">
+                        <button class="btn btn-secondary" type="submit">Renvoyer l'email de validation</button>
+                    </form>
+                </div>
+            <?php endif; ?>
+
             <form method="POST" novalidate>
                 <div class="form-group">
                     <label for="email">Email</label>

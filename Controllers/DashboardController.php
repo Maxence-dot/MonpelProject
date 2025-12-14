@@ -20,18 +20,19 @@ class DashboardController
     public function index()
     {
         session_start();
-        
+
         // Vérifier que l'utilisateur est connecté
         if (!isset($_SESSION['user_id'])) {
-            header('Location: /login');
+            $basePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
+            header('Location: ' . $basePath . '/login');
             exit;
         }
 
         $userId = (int) $_SESSION['user_id'];
-        
+
         // Récupérer les parties en brouillon avec le nombre de personnages
         $parties = $this->partyRepository->findDraftsWithCharacterCount($userId);
-        
+
         // Charger la vue
         require_once __DIR__ . '/../views/dashboard.php';
     }

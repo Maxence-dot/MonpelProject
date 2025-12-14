@@ -1,5 +1,10 @@
 <?php
 
+// Load .env into environment early so config.php can use it if needed
+if (file_exists(__DIR__ . '/load_env.php')) {
+    require_once __DIR__ . '/load_env.php';
+}
+
 /*************************************************
  *  CONFIGURATION ENVIRONNEMENT
  *************************************************/

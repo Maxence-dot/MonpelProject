@@ -15,6 +15,7 @@ class AuthController
 
         $error = null;
         $old = ['email' => ''];
+        $showResend = false;
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $email = trim($_POST['email'] ?? '');
@@ -28,6 +29,7 @@ class AuthController
                     // Check if email is validated
                     if (empty($user['email_valid']) || $user['email_valid'] == 0) {
                         $error = 'Veuillez valider votre adresse email. Vérifiez votre boîte de réception.';
+                        $showResend = true;
                     } else {
                         session_regenerate_id(true);
                         $_SESSION['user_id'] = $user['id'];
@@ -46,6 +48,53 @@ class AuthController
         }
 
         include __DIR__ . '/../views/auth/login_view.php';
+    }
+
+    public static function resendValidation()
+    {
+        session_start();
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $basePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
+            header('Location: ' . $basePath . '/login.php');
+            exit;
+        }
+
+        $email = trim($_POST['email'] ?? '');
+        if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $basePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
+            header('Location: ' . $basePath . '/login.php');
+            exit;
+        }
+
+        $userRepo = self::getUserRepository();
+        $user = $userRepo->findByEmail($email);
+        if (!$user) {
+            // avoid revealing whether an account exists – redirect to check email anyway
+            $basePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
+            header('Location: ' . $basePath . '/auth/check_email.php');
+            exit;
+        }
+
+        if (!empty($user['email_valid']) && $user['email_valid'] == 1) {
+            $basePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
+            header('Location: ' . $basePath . '/login.php');
+            exit;
+        }
+
+        // generate new token and store
+        $token = bin2hex(random_bytes(16));
+        $now = date('Y-m-d H:i:s');
+        $userRepo->setValidationTokenByEmail($email, $token, $now);
+
+        // send email
+        require_once __DIR__ . '/../src/MailService.php';
+        $mail = new \MailService();
+        $mail->sendValidationEmail($email, $token);
+
+        $basePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
+        header('Location: ' . $basePath . '/auth/check_email.php');
+        exit;
     }
 
     public static function register()
