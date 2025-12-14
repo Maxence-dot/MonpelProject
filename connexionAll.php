@@ -7,16 +7,6 @@
 // Load configuration (may come from environment or config.local.php outside the repo)
 $cfg = require __DIR__ . '/config.php';
 
-// Detect local env to enable error display (keeps previous behavior)
-$isLocalhost = in_array($_SERVER['SERVER_NAME'] ?? '', [
-    'localhost',
-    '127.0.0.1'
-]);
-if ($isLocalhost) {
-    ini_set('display_errors', 1);
-    ini_set('display_startup_errors', 1);
-    error_reporting(E_ALL);
-}
 
 $dbHost = $cfg['DB_HOST'];
 $dbName = $cfg['DB_NAME'];

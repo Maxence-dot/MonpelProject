@@ -1,5 +1,6 @@
 <?php
-require_once 'connexionAll.php';
+// Controller moved to views/auth for organization.
+require_once __DIR__ . '/../../connexionAll.php';
 session_start();
 
 $error = null;
@@ -14,15 +15,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $pdo->prepare("SELECT * FROM session WHERE email = ?");
         $ok = $stmt->execute([$email]);
         $user = $stmt->fetch();
-        // Debugging information shown only on localhost
 
         if ($user && password_verify($password, $user['password'])) {
-            // Connexion OK
             session_regenerate_id(true);
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['user_email'] = $user['email'];
 
-            header('Location: index.php');
+            header('Location: /MonpelProject/index.php');
             exit;
         } else {
             $error = 'Email ou mot de passe incorrect';
@@ -31,6 +30,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Veuillez remplir tous les champs';
     }
 }
-?>
-<?php include __DIR__ . '/views/auth/login_view.php'; ?>
 
+include __DIR__ . '/login_view.php';

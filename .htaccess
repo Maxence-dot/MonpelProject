@@ -1,0 +1,12 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /MonpelProject/
+
+  # Serve existing non-PHP files directly (assets: css, js, images, html, etc.)
+  RewriteCond %{REQUEST_FILENAME} -f
+  RewriteCond %{REQUEST_URI} !\.php$
+  RewriteRule ^ - [L]
+
+  # Otherwise route to router.php (all PHP endpoints will be handled by router)
+  RewriteRule ^ router.php [L,QSA]
+</IfModule>

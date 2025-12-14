@@ -21,14 +21,26 @@ if (!hash_equals((string)$token, (string)$provided)) {
     exit;
 }
 
-// Ensure migrations table
-$pdo->exec(
+// Ensure migrations table (driver-aware)
+$driver = $pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
+if ($driver === 'sqlite') {
+  $pdo->exec(
     "CREATE TABLE IF NOT EXISTS migrations (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL UNIQUE,
-        applied_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL UNIQUE,
+      applied_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );"
-);
+  );
+} else {
+  // MySQL / MariaDB compatible
+  $pdo->exec(
+    "CREATE TABLE IF NOT EXISTS migrations (
+      id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+      name VARCHAR(255) NOT NULL UNIQUE,
+      applied_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;"
+  );
+}
 
 $migrations = glob(__DIR__ . '/../migrations/*.php');
 sort($migrations);
@@ -57,15 +69,22 @@ if (isset($_POST['run'])) {
             continue;
           }
         try {
-            $pdo->beginTransaction();
-            $upFn($pdo);
+          $pdo->beginTransaction();
+          $upFn($pdo);
+          // Some DB engines (MySQL/MariaDB) may perform implicit commits on DDL,
+          // which means the transaction can be closed by the time we call commit().
+          // Check before committing to avoid "There is no active transaction".
+          if ($pdo->inTransaction()) {
             $pdo->commit();
-            $insert = $pdo->prepare('INSERT INTO migrations (name) VALUES (?)');
-            $insert->execute([$name]);
-            $results[] = ['name' => $name, 'status' => 'applied'];
+          }
+          $insert = $pdo->prepare('INSERT INTO migrations (name) VALUES (?)');
+          $insert->execute([$name]);
+          $results[] = ['name' => $name, 'status' => 'applied'];
         } catch (Exception $e) {
+          if ($pdo->inTransaction()) {
             $pdo->rollBack();
-            $results[] = ['name' => $name, 'status' => 'failed', 'message' => $e->getMessage()];
+          }
+          $results[] = ['name' => $name, 'status' => 'failed', 'message' => $e->getMessage()];
         }
     }
 }

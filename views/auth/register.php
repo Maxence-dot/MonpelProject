@@ -1,5 +1,6 @@
 <?php
-require_once 'connexionAll.php';
+// Controller moved to views/auth for organization.
+require_once __DIR__ . '/../../connexionAll.php';
 session_start();
 
 $errors = [];
@@ -25,19 +26,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (empty($errors)) {
-        // Vérifier si l'email existe
         $stmt = $pdo->prepare("SELECT id FROM session WHERE email = ?");
         $stmt->execute([$email]);
         if ($stmt->fetch()) {
             $errors[] = 'Un compte avec cet email existe déjà';
         } else {
             $hash = password_hash($password, PASSWORD_DEFAULT);
-            // Use PHP timestamp to be compatible with MySQL and SQLite
             $now = date('Y-m-d H:i:s');
             $insert = $pdo->prepare("INSERT INTO session (email, password, firstname, lastname, created_at) VALUES (?,?,?,?,?)");
             try {
                 $insert->execute([$email, $hash, $firstname, $lastname, $now]);
-                header('Location: login.php?registered=1');
+                header('Location: /MonpelProject/login.php?registered=1');
                 exit;
             } catch (Exception $e) {
                 $errors[] = 'Erreur enregistrement: ' . $e->getMessage();
@@ -45,5 +44,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
-?>
-<?php include __DIR__ . '/views/auth/register_view.php'; ?>
+
+include __DIR__ . '/register_view.php';
